@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UAP Archive // Declassified Records</title>
+    <style>
+        :root {
+            --bg-color: #07090f;
+            --panel-bg: rgba(15, 20, 30, 0.85);
+            --text-main: #d1d5db;
+            --text-dim: #6b7280;
+            --accent-cyan: #00f3ff;
+            --accent-amber: #ffb000;
+            --accent-red: #ff3366;
+            --accent-green: #00ff9d;
+            --border-color: rgba(0, 243, 255, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            background-image:
+                linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-attachment: fixed;
+            position: relative;
+        }
+
+        /* Scanline overlay */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 100;
+            opacity: 0.3;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .ufo-icon {
+            font-size: 4rem;
+            display: inline-block;
+            animation: float 4s ease-in-out infinite;
+            filter: drop-shadow(0 0 20px rgba(0, 243, 255, 0.5));
+            margin-bottom: 1rem;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(-2deg); }
+            50% { transform: translateY(-15px) rotate(2deg); }
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--accent-cyan);
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .terminal-window {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 243, 255, 0.02);
+            backdrop-filter: blur(5px);
+            position: relative;
+            z-index: 1;
+        }
+
+        .terminal-header {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            align-items: center;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .dot.red { background: #ff5f56; }
+        .dot.yellow { background: #ffbd2e; }
+        .dot.green { background: #27c93f; }
+
+        .terminal-title {
+            margin-left: auto;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+        }
+
+        .section-label {
+            color: var(--accent-green);
+            font-size: 0.85rem;
+            margin-bottom: 1.5rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .section-label::before {
+            content: "> ";
+            color: var(--accent-cyan);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .data-card {
+            padding: 1.5rem;
+            background: rgba(0, 0, 0, 0.4);
+            border-left: 4px solid var(--accent-cyan);
+            border-radius: 0 4px 4px 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .data-card::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(135deg, transparent 60%, rgba(0, 243, 255, 0.05) 100%);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .data-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .data-card:hover::after {
+            opacity: 1;
+        }
+
+        .data-card.cat-incident { border-left-color: var(--accent-cyan); }
+        .data-card.cat-project { border-left-color: var(--accent-amber); }
+        .data-card.cat-encounter { border-left-color: var(--accent-green); }
+        .data-card.cat-lore { border-left-color: var(--accent-red); }
+        .data-card.cat-phenomenon { border-left-color: var(--accent-green); }
+        .data-card.cat-origin { border-left-color: var(--accent-cyan); }
+        .data-card.cat-location { border-left-color: var(--accent-red); }
+
+        .card-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            border: 1px solid currentColor;
+        }
+
+        .badge.incident { color: var(--accent-cyan); background: rgba(0, 243, 255, 0.15); }
+        .badge.project { color: var(--accent-amber); background: rgba(255, 176, 0, 0.15); }
+        .badge.encounter { color: var(--accent-green); background: rgba(0, 255, 157, 0.15); }
+        .badge.lore { color: var(--accent-red); background: rgba(255, 51, 102, 0.15); }
+        .badge.phenomenon { color: var(--accent-green); background: rgba(0, 255, 157, 0.15); }
+        .badge.origin { color: var(--accent-cyan); background: rgba(0, 243, 255, 0.15); }
+        .badge.location { color: var(--accent-red); background: rgba(255, 51, 102, 0.15); }
+
+        .card-title {
+            font-size: 1.25rem;
+            color: #fff;
+            margin-bottom: 0.8rem;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+            line-height: 1.3;
+        }
+
+        .card-text {
+            line-height: 1.6;
+            color: var(--text-main);
+            font-size: 0.9rem;
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-dim);
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+        }
+
+        footer {
+            margin-top: 3rem;
+            text-align: center;
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            z-index: 1;
+            position: relative;
+        }
+
+        .warning {
+            color: var(--accent-red);
+            margin-top: 0.5rem;
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 1.8rem; letter-spacing: 2px; }
+            .terminal-window { padding: 1.5rem; }
+            .card-title { font-size: 1.1rem; }
+            .grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="ufo-icon">🛸</div>
+        <h1>UAP Archive</h1>
+        <p class="subtitle">Unidentified Anomalous Phenomena Database</p>
+    </header>
+
+    <main class="terminal-window">
+        <div class="terminal-header">
+            <div class="dot red"></div>
+            <div class="dot yellow"></div>
+            <div class="dot green"></div>
+            <span class="terminal-title">root@uap-taskforce:~# cat /archive/*</span>
+        </div>
+
+        <div class="section-label">Declassified Records // 12 Files Retrieved</div>
+
+        <div class="legend">
+            <div class="legend-item"><span class="legend-dot" style="background:var(--accent-cyan)"></span>Incident</div>
+            <div class="legend-item"><span class="legend-dot" style="background:var(--accent-amber)"></span>Project</div>
+            <div class="legend-item"><span class="legend-dot" style="background:var(--accent-green)"></span>Encounter / Phenomenon</div>
+            <div class="legend-item"><span class="legend-dot" style="background:var(--accent-red)"></span>Lore / Location</div>
+        </div>
+
+        <div class="grid">
+
+            <article class="data-card cat-incident">
+                <div class="card-meta">
+                    <span>FILE #1947</span>
+                    <span class="badge incident">INCIDENT</span>
+                </div>
+                <h2 class="card-title">The Roswell Incident</h2>
+                <p class="card-text">A rancher discovered unusual debris near Roswell, New Mexico. The military initially issued a press release stating they had recovered a 'flying disc,' but quickly retracted it, claiming it was a weather balloon. It remains the most famous UFO incident in history and the birthplace of modern ufology.</p>
+            </article>
+
+            <article class="data-card cat-project">
+                <div class="card-meta">
+                    <span>FILE #1952</span>
+                    <span class="badge project">PROJECT</span>
+                </div>
+                <h2 class="card-title">Project Blue Book</h2>
+                <p class="card-text">The code name for the United States Air Force's systematic study of Unidentified Flying Objects. Over its 18-year run, it collected 12,618 sightings. 701 were left classified as 'unidentified' after exhaustive investigation before the program was abruptly terminated.</p>
+            </article>
+
+            <article class="data-card cat-incident">
+                <div class="card-meta">
+                    <span>FILE #1997</span>
+                    <span class="badge incident">INCIDENT</span>
+                </div>
+                <h2 class="card-title">The Phoenix Lights</h2>
+                <p class="card-text">On March 13, 1997, thousands of people witnessed a massive V-shaped formation of lights moving silently over Phoenix, Arizona. Even the governor at the time, Fife Symington, later admitted he saw it and described the craft as 'otherworldly'.</p>
+            </article>
+
+            <article class="data-card cat-encounter">
+                <div class="card-meta">
+                    <span>FILE #2004</span>
+                    <span class="badge encounter">ENCOUNTER</span>
+                </div>
+                <h2 class="card-title">The Nimitz 'Tic Tac'</h2>
+                <p class="card-text">USS Nimitz carrier strike group tracked a white, oval-shaped object resembling a Tic Tac candy for weeks. It dropped from 80,000 feet to sea level in seconds, exhibiting no visible means of propulsion, wings, or exhaust. The encounter was captured on infrared video by Navy pilots.</p>
+            </article>
+
+            <article class="data-card cat-lore">
+                <div class="card-meta">
+                    <span>FILE #1989</span>
+                    <span class="badge lore">LORE</span>
+                </div>
+                <h2 class="card-title">S-4 &amp; Element 115</h2>
+                <p class="card-text">In 1989, Bob Lazar claimed he was employed at S-4, a secret facility near Area 51, where he reverse-engineered alien spacecraft. He stated the craft were powered by Element 115 (Moscovium), which was not synthesized on Earth until 2003, lending an eerie layer of credibility to his claims.</p>
+            </article>
+
+            <article class="data-card cat-incident">
+                <div class="card-meta">
+                    <span>FILE #1980</span>
+                    <span class="badge incident">INCIDENT</span>
+                </div>
+                <h2 class="card-title">Rendlesham Forest</h2>
+                <p class="card-text">Often called 'Britain's Roswell,' U.S. Air Force personnel stationed at RAF Woodbridge witnessed strange lights and a triangular craft landing in Rendlesham Forest. They recorded radiation signatures and physical indentations in the ground before the craft departed.</p>
+            </article>
+
+            <article class="data-card cat-project">
+                <div class="card-meta">
+                    <span>FILE #2007</span>
+                    <span class="badge project">PROJECT</span>
+                </div>
+                <h2 class="card-title">AATIP</h2>
+                <p class="card-text">The Advanced Aerospace Threat Identification Program was a secret Pentagon program funded at $22 million to investigate UAPs. It was exposed by the New York Times in 2017, leading to the official release of the Navy 'Tic Tac' and 'Gimbal' videos.</p>
+            </article>
+
+            <article class="data-card cat-phenomenon">
+                <div class="card-meta">
+                    <span>FILE #1989-B</span>
+                    <span class="badge phenomenon">PHENOMENON</span>
+                </div>
+                <h2 class="card-title">The Belgium UFO Wave</h2>
+                <p class="card-text">Over several months, thousands reported massive, silent, black triangular crafts with bright lights at the corners. The Belgian Air Force scrambled F-16s, which locked onto the objects multiple times. The targets consistently performed impossible accelerations, evading missiles.</p>
+            </article>
+
+            <article class="data-card cat-origin">
+                <div class="card-meta">
+                    <span>FILE #1947-A</span>
+                    <span class="badge origin">ORIGIN</span>
+                </div>
+                <h2 class="card-title">The 'Flying Saucer' Term</h2>
+                <p class="card-text">Private pilot Kenneth Arnold reported seeing nine unusual objects flying past Mount Rainier. When asked to describe their motion, he said they flew 'like a saucer would if you skipped it across the water.' A reporter misquoted him, and the term 'Flying Saucer' was born.</p>
+            </article>
+
+            <article class="data-card cat-encounter">
+                <div class="card-meta">
+                    <span>FILE #1994</span>
+                    <span class="badge encounter">ENCOUNTER</span>
+                </div>
+                <h2 class="card-title">Ariel School Sighting</h2>
+                <p class="card-text">In Ruwa, Zimbabwe, over 60 schoolchildren reported seeing a silver craft land near their playground. They described small beings with large eyes wearing tight black suits. The incident was investigated by Harvard psychiatrist John Mack, who concluded the children's accounts were genuine.</p>
+            </article>
+
+            <article class="data-card cat-location">
+                <div class="card-meta">
+                    <span>FILE #UTAH</span>
+                    <span class="badge location">LOCATION</span>
+                </div>
+                <h2 class="card-title">Skinwalker Ranch</h2>
+                <p class="card-text">Located in the Uintah Basin of Utah, this 512-acre ranch is a hotspot for UAP activity, cattle mutilations, and paranormal phenomena. It was heavily studied by the Bigelow Aerospace Advanced Space Studies Program (BAASS) in the late 1990s and early 2000s.</p>
+            </article>
+
+            <article class="data-card cat-encounter">
+                <div class="card-meta">
+                    <span>FILE #2015</span>
+                    <span class="badge encounter">ENCOUNTER</span>
+                </div>
+                <h2 class="card-title">USS Roosevelt 'Go Fast'</h2>
+                <p class="card-text">Navy pilots from the USS Theodore Roosevelt captured infrared footage of a dark, spherical object skimming just above the ocean surface at incredible speeds. The object exhibited no control surfaces, exhaust plumes, or thermal signatures typical of known aircraft.</p>
+            </article>
+
+        </div>
+    </main>
+
+    <footer>
+        <p>System Version 4.2.1 // Node: Earth-Orbit</p>
+        <p class="warning">WARNING: Unauthorized access is monitored.</p>
+    </footer>
+
+</body>
+</html>
